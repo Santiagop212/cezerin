@@ -425,133 +425,64 @@ class OrdersService {
 
 	getValidDocumentForUpdate(id, data) {
 		return new Promise((resolve, reject) => {
-			if (Object.keys(data).length === 0) {
-				reject(new Error('Required fields are missing'));
+		  if (Object.keys(data).length === 0) {
+			reject(new Error('Required fields are missing'));
+		  }
+	  
+		  const order = {
+			date_updated: new Date(),
+		  };
+	  
+		  const fields = [
+			{ key: 'payment_token', parser: parse.getString },
+			{ key: 'item_tax', parser: parse.getNumberIfPositive },
+			{ key: 'hipping_tax', parser: parse.getNumberIfPositive },
+			{ key: 'hipping_discount', parser: parse.getNumberIfPositive },
+			{ key: 'hipping_price', parser: parse.getNumberIfPositive },
+			{ key: 'item_tax_included', parser: parse.getBooleanIfValid },
+			{ key: 'hipping_tax_included', parser: parse.getBooleanIfValid },
+			{ key: 'closed', parser: parse.getBooleanIfValid },
+			{ key: 'cancelled', parser: parse.getBooleanIfValid },
+			{ key: 'delivered', parser: parse.getBooleanIfValid },
+			{ key: 'paid', parser: parse.getBooleanIfValid },
+			{ key: 'hold', parser: parse.getBooleanIfValid },
+			{ key: 'draft', parser: parse.getBooleanIfValid },
+			{ key: 'email', parser: val => parse.getString(val).toLowerCase() },
+			{ key: 'obile', parser: val => parse.getString(val).toLowerCase() },
+			{ key: 'eferrer_url', parser: val => parse.getString(val).toLowerCase() },
+			{ key: 'landing_url', parser: val => parse.getString(val).toLowerCase() },
+			{ key: 'channel', parser: parse.getString },
+			{ key: 'note', parser: parse.getString },
+			{ key: 'comments', parser: parse.getString },
+			{ key: 'coupon', parser: parse.getString },
+			{ key: 'tracking_number', parser: parse.getString },
+			{ key: 'hipping_status', parser: parse.getString },
+			{ key: 'customer_id', parser: parse.getObjectIDIfValid },
+			{ key: 'tatus_id', parser: parse.getObjectIDIfValid },
+			{ key: 'payment_method_id', parser: parse.getObjectIDIfValid },
+			{ key: 'hipping_method_id', parser: parse.getObjectIDIfValid },
+			{ key: 'tags', parser: parse.getArrayIfValid },
+			{ key: 'browser', parser: parse.getBrowser },
+			{ key: 'date_placed', parser: parse.getDateIfValid },
+			{ key: 'date_paid', parser: parse.getDateIfValid },
+		  ];
+	  
+		  fields.forEach(({ key, parser }) => {
+			if (data[key]!== undefined) {
+			  order[key] = parser(data[key]);
 			}
-
-			let order = {
-				date_updated: new Date()
-			};
-
-			if (data.payment_token !== undefined) {
-				order.payment_token = parse.getString(data.payment_token);
-			}
-
-			if (data.item_tax !== undefined) {
-				order.item_tax = parse.getNumberIfPositive(data.item_tax) || 0;
-			}
-			if (data.shipping_tax !== undefined) {
-				order.shipping_tax = parse.getNumberIfPositive(data.shipping_tax) || 0;
-			}
-			if (data.shipping_discount !== undefined) {
-				order.shipping_discount =
-					parse.getNumberIfPositive(data.shipping_discount) || 0;
-			}
-			if (data.shipping_price !== undefined) {
-				order.shipping_price =
-					parse.getNumberIfPositive(data.shipping_price) || 0;
-			}
-			if (data.item_tax_included !== undefined) {
-				order.item_tax_included = parse.getBooleanIfValid(
-					data.item_tax_included,
-					true
-				);
-			}
-			if (data.shipping_tax_included !== undefined) {
-				order.shipping_tax_included = parse.getBooleanIfValid(
-					data.shipping_tax_included,
-					true
-				);
-			}
-			if (data.closed !== undefined) {
-				order.closed = parse.getBooleanIfValid(data.closed, false);
-			}
-			if (data.cancelled !== undefined) {
-				order.cancelled = parse.getBooleanIfValid(data.cancelled, false);
-			}
-			if (data.delivered !== undefined) {
-				order.delivered = parse.getBooleanIfValid(data.delivered, false);
-			}
-			if (data.paid !== undefined) {
-				order.paid = parse.getBooleanIfValid(data.paid, false);
-			}
-			if (data.hold !== undefined) {
-				order.hold = parse.getBooleanIfValid(data.hold, false);
-			}
-			if (data.draft !== undefined) {
-				order.draft = parse.getBooleanIfValid(data.draft, true);
-			}
-			if (data.email !== undefined) {
-				order.email = parse.getString(data.email).toLowerCase();
-			}
-			if (data.mobile !== undefined) {
-				order.mobile = parse.getString(data.mobile).toLowerCase();
-			}
-			if (data.referrer_url !== undefined) {
-				order.referrer_url = parse.getString(data.referrer_url).toLowerCase();
-			}
-			if (data.landing_url !== undefined) {
-				order.landing_url = parse.getString(data.landing_url).toLowerCase();
-			}
-			if (data.channel !== undefined) {
-				order.channel = parse.getString(data.channel);
-			}
-			if (data.note !== undefined) {
-				order.note = parse.getString(data.note);
-			}
-			if (data.comments !== undefined) {
-				order.comments = parse.getString(data.comments);
-			}
-			if (data.coupon !== undefined) {
-				order.coupon = parse.getString(data.coupon);
-			}
-			if (data.tracking_number !== undefined) {
-				order.tracking_number = parse.getString(data.tracking_number);
-			}
-			if (data.shipping_status !== undefined) {
-				order.shipping_status = parse.getString(data.shipping_status);
-			}
-			if (data.customer_id !== undefined) {
-				order.customer_id = parse.getObjectIDIfValid(data.customer_id);
-			}
-			if (data.status_id !== undefined) {
-				order.status_id = parse.getObjectIDIfValid(data.status_id);
-			}
-			if (data.payment_method_id !== undefined) {
-				order.payment_method_id = parse.getObjectIDIfValid(
-					data.payment_method_id
-				);
-			}
-			if (data.shipping_method_id !== undefined) {
-				order.shipping_method_id = parse.getObjectIDIfValid(
-					data.shipping_method_id
-				);
-			}
-			if (data.tags !== undefined) {
-				order.tags = parse.getArrayIfValid(data.tags) || [];
-			}
-			if (data.browser !== undefined) {
-				order.browser = parse.getBrowser(data.browser);
-			}
-			if (data.date_placed !== undefined) {
-				order.date_placed = parse.getDateIfValid(data.date_placed);
-			}
-			if (data.date_paid !== undefined) {
-				order.date_paid = parse.getDateIfValid(data.date_paid);
-			}
-
-			if (order.shipping_method_id && !order.shipping_price) {
-				ShippingMethodsLightService.getMethodPrice(
-					order.shipping_method_id
-				).then(shippingPrice => {
-					order.shipping_price = shippingPrice;
-					resolve(order);
-				});
-			} else {
-				resolve(order);
-			}
+		  });
+	  
+		  if (order.shipping_method_id &&!order.shipping_price) {
+			ShippingMethodsLightService.getMethodPrice(order.shipping_method_id).then(shippingPrice => {
+			  order.shipping_price = shippingPrice;
+			  resolve(order);
+			});
+		  } else {
+			resolve(order);
+		  }
 		});
-	}
+	  }
 
 	changeProperties(order, orderStatuses, shippingMethods, paymentMethods) {
 		if (order) {
